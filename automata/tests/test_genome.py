@@ -11,7 +11,8 @@ class ParsersTest(unittest.TestCase):
         self.assertEqual(op.c_state, 'B')
         self.assertEqual(op.p_state, 'A')
         self.assertEqual(op.c_condition, 'c>2')
-        self.assertEqual(op.command, '++D')
+        self.assertEqual(op.command.state, 'D')
+        self.assertEqual(op.command.function.__name__, 'plus_plus')
 
     def test_parsing2(self):
         text = 'A(C), c<2:F'
@@ -20,7 +21,8 @@ class ParsersTest(unittest.TestCase):
         self.assertEqual(op.c_state, 'A')
         self.assertEqual(op.p_state, 'C')
         self.assertEqual(op.c_condition, 'c<2')
-        self.assertEqual(op.command, 'F')
+        self.assertEqual(op.command.state, 'F')
+        self.assertEqual(op.command.function.__name__, 'change_state')
 
     def test_parsing3(self):
         text = 'A(), c == 5:  -E'
@@ -29,4 +31,5 @@ class ParsersTest(unittest.TestCase):
         self.assertEqual(op.c_state, 'A')
         self.assertEqual(op.p_state, '')
         self.assertEqual(op.c_condition, 'c==5')
-        self.assertEqual(op.command, '-E')
+        self.assertEqual(op.command.state, 'E')
+        self.assertEqual(op.command.function.__name__, 'minus')
