@@ -40,3 +40,11 @@ class GraphOperationsTest(unittest.TestCase):
     def test_add_existing_edge(self):
         g = add_edge(copy.deepcopy(GraphOperationsTest.graph), 'A', 'B')
         self.assertDictEqual(g, GraphOperationsTest.graph)
+
+    def test_find_closest(self):
+        e = find_closest(GraphOperationsTest.graph, 'A', lambda x: x >= 'D')
+        self.assertEqual(e, 'D')
+        e = find_closest(GraphOperationsTest.graph, 'A', lambda x: x != 'C')
+        self.assertEqual(e, 'A')
+        e = find_closest(GraphOperationsTest.graph, 'A', lambda x: x >= 'Z')
+        self.assertIsNone(e)
