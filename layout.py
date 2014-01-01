@@ -39,7 +39,7 @@ class Vector:
         return self
 
 
-def spring_layout(graph, width, height, iterations=1000):
+def spring_layout(graph, width, height, iterations=1000, c=0.5):
     """Graph Drawing by Force-directed Placement using Fruchterman-Reingold algorithm.
     Original paper: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.13.8444&rep=rep1&type=pdf
     Args:
@@ -47,11 +47,12 @@ def spring_layout(graph, width, height, iterations=1000):
         width: width of frame
         height: height of frame
         iterations: number of iterations in the algorithm
+        c: constant in the formula for k (ideal distance between vertices)
     Returns:
         Graph with added to each vertex attribute .pos, that returns Vector
     """
     area = width*height
-    k = math.sqrt(area/len(graph.keys()))
+    k = math.sqrt(area/len(graph.keys()))*c
 
     def fr(x):
         return k*k/(x + 0.1)
