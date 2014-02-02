@@ -1,16 +1,15 @@
 import wx
-import wx.grid
 
 from automata.organism import Organism
 from layout import spring_layout
 import itertools
 
 
-WIN_WIDTH = 800
-WIN_HEIGHT = 800
-FORCE_FQ = 100
-ITERATION_FQ = 1000
-LAYOUT_ITERATIONS = 10
+WIN_WIDTH = 800  # Main window width
+WIN_HEIGHT = 800  # Main window height
+FORCE_FQ = 100  # The frequency of a force-directed algorithm updates in ms
+ITERATION_FQ = 1000  # The frequency of organism's iterations in ms
+LAYOUT_ITERATIONS = 10  # The number of iterations in a force-directed algorithm per update
 
 
 class GraphVisualizerFrame(wx.Frame):
@@ -21,16 +20,22 @@ class GraphVisualizerFrame(wx.Frame):
         self.Show(True)
 
     def InitUI(self):
-      self.panel = wx.Panel(self)
-      self.SetMenuBar(wx.MenuBar())
+        """
+        Initializes main UI elements: panel, toolbar, bitmap buffer.
+        """
+        self.panel = wx.Panel(self)
+        self.SetMenuBar(wx.MenuBar())
 
-      toolbar = self.CreateToolBar()
-      toolbar.Realize()
+        toolbar = self.CreateToolBar()
+        toolbar.Realize()
 
-      self.buffer = wx.EmptyBitmap(WIN_WIDTH, WIN_HEIGHT)
-      self.draw(None)
+        self.buffer = wx.EmptyBitmap(WIN_WIDTH, WIN_HEIGHT)
+        self.draw(None)
 
     def draw(self, event):
+        """
+        Initializes timers related to displaying the organism.
+        """
         self.force_timer = wx.Timer(self)
         self.force_timer.Start(FORCE_FQ)
         self.iterate_timer = wx.Timer(self)
@@ -44,20 +49,32 @@ class GraphVisualizerFrame(wx.Frame):
         self.draw_graph(dc)
 
     def update_layout(self, event):
+        """
+        Updates layout by calling force-directed algorithm.
+        """
         if not spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=LAYOUT_ITERATIONS):
             self.force_timer.Destroy()
         self.update(event)
 
     def update_organism(self, event):
+        """
+        Updates organism by performing one iteration.
+        """
         if not self.organism.iterate():
             self.iterate_timer.Destroy()
 
     def update(self, event):
+        """
+        Updates bitmap buffer.
+        """
         if self.force_timer.IsRunning() or self.iterate_timer.IsRunning():
             dc = wx.BufferedDC(wx.ClientDC(self.panel), self.buffer)
             self.draw_graph(dc)
 
     def draw_graph(self, dc):
+        """
+        Draws graph in bitmap buffer, called by update()
+        """
         dc.Clear()
         for pair in itertools.combinations(self.organism.graph.keys(), 2):
             if pair[0] in self.organism.graph[pair[1]]:
