@@ -8,8 +8,9 @@ import itertools
 
 WIN_WIDTH = 800
 WIN_HEIGHT = 800
-DISPLAY = (WIN_WIDTH, WIN_HEIGHT)
-BACKGROUND_COLOR = "#000000"
+FORCE_FQ = 100
+ITERATION_FQ = 1000
+LAYOUT_ITERATIONS = 10
 
 
 class GraphVisualizerFrame(wx.Frame):
@@ -31,19 +32,19 @@ class GraphVisualizerFrame(wx.Frame):
 
     def draw(self, event):
         self.force_timer = wx.Timer(self)
-        self.force_timer.Start(100)
+        self.force_timer.Start(FORCE_FQ)
         self.iterate_timer = wx.Timer(self)
-        self.iterate_timer.Start(1000)
+        self.iterate_timer.Start(ITERATION_FQ)
 
         self.Bind(wx.EVT_TIMER, self.update_layout, self.force_timer)
         self.Bind(wx.EVT_TIMER, self.update_organism, self.iterate_timer)
 
         dc = wx.BufferedDC(wx.ClientDC(self.panel), self.buffer)
-        spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=10)
+        spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=LAYOUT_ITERATIONS)
         self.draw_graph(dc)
 
     def update_layout(self, event):
-        if not spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=10):
+        if not spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=LAYOUT_ITERATIONS):
             self.force_timer.Destroy()
         self.update(event)
 
