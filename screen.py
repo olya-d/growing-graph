@@ -15,7 +15,7 @@ BACKGROUND_COLOR = "#000000"
 class GraphVisualizerFrame(wx.Frame):
     def __init__(self, parent, title, organism):
         self.organism = organism
-        super(GraphVisualizerFrame, self).__init__(parent, title=title, size=(800, 600))
+        super(GraphVisualizerFrame, self).__init__(parent, title=title, size=(WIN_WIDTH, WIN_HEIGHT))
         self.InitUI()
         self.Show(True)
 
@@ -26,7 +26,7 @@ class GraphVisualizerFrame(wx.Frame):
       toolbar = self.CreateToolBar()
       toolbar.Realize()
 
-      self.buffer = wx.EmptyBitmap(800, 600)
+      self.buffer = wx.EmptyBitmap(WIN_WIDTH, WIN_HEIGHT)
       self.draw(None)
 
     def draw(self, event):
@@ -39,11 +39,11 @@ class GraphVisualizerFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.update_organism, self.iterate_timer)
 
         dc = wx.BufferedDC(wx.ClientDC(self.panel), self.buffer)
-        spring_layout(self.organism.graph, width=400, height=300, iterations=10)
+        spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=10)
         self.draw_graph(dc)
 
     def update_layout(self, event):
-        if not spring_layout(self.organism.graph, width=400, height=300, iterations=10):
+        if not spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=10):
             self.force_timer.Destroy()
         self.update(event)
 
@@ -60,10 +60,10 @@ class GraphVisualizerFrame(wx.Frame):
         dc.Clear()
         for pair in itertools.combinations(self.organism.graph.keys(), 2):
             if pair[0] in self.organism.graph[pair[1]]:
-                x1 = int(pair[0].pos.x) + 200
-                y1 = int(pair[0].pos.y) + 150
-                x2 = int(pair[1].pos.x) + 200
-                y2 = int(pair[1].pos.y) + 150
+                x1 = int(pair[0].pos.x) + WIN_WIDTH/2
+                y1 = int(pair[0].pos.y) + WIN_HEIGHT/2
+                x2 = int(pair[1].pos.x) + WIN_WIDTH/2
+                y2 = int(pair[1].pos.y) + WIN_HEIGHT/2
 
                 dc.DrawLine(x1, y1, x2, y2)
 
