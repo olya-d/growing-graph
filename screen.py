@@ -3,6 +3,7 @@ import wx
 from automata.organism import Organism
 from layout import spring_layout
 import itertools
+import support
 
 
 WIN_WIDTH = 800  # Main window width
@@ -46,6 +47,11 @@ class GraphVisualizerFrame(wx.Frame):
 
         dc = wx.BufferedDC(wx.ClientDC(self.panel), self.buffer)
         spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=LAYOUT_ITERATIONS)
+
+        # Generate a color for each state
+        states = self.organism.genome.states()
+        self.colors = dict(zip(states, support.distinct_colors(len(states))))
+
         self.draw_graph(dc)
 
     def update_layout(self, event):
@@ -76,8 +82,17 @@ class GraphVisualizerFrame(wx.Frame):
         Draws graph in bitmap buffer, called by update()
         """
         dc.Clear()
+        dc.SetBrush(wx.Brush('#000000'))
+        dc.DrawRectangle(0, 0, WIN_WIDTH, WIN_HEIGHT)
+
         for pair in itertools.combinations(self.organism.graph.keys(), 2):
+            edge_state = None
             if pair[0] in self.organism.graph[pair[1]]:
+                if pair[0] in pair[1].imediate_parents:
+                    edge_state = pair[0].state
+                elif pair[1] == pair[0].imediate_parents:
+                    edge_state = pair[1].state
+                dc.SetPen(wx.Pen(self.colors[edge_state]))
                 x1 = int(pair[0].pos.x) + WIN_WIDTH/2
                 y1 = int(pair[0].pos.y) + WIN_HEIGHT/2
                 x2 = int(pair[1].pos.x) + WIN_WIDTH/2
