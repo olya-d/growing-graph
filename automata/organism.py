@@ -96,6 +96,9 @@ class Genome:
     def __str__(self):
         return self.text
 
+    def states(self):
+        return set([state for op in self.operations for state in [op.c_state, op.p_state, op.command.state]])
+
 
 class Cell(object):
     def __init__(self, graph, state='', parents=1):
