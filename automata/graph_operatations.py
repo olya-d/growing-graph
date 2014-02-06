@@ -12,8 +12,10 @@ def add_edge(graph, vertex1, vertex2, directed=True):
 
 
 def remove_edge(graph, vertex1, vertex2):
-    graph[vertex1].remove(vertex2)
-    graph[vertex2].remove(vertex1)
+    if vertex2 in graph[vertex1]:
+        graph[vertex2].remove(vertex1)
+    if vertex1 in graph[vertex2]:
+        graph[vertex1].remove(vertex2)
     return graph
 
 
@@ -35,4 +37,3 @@ def find_closest(graph, vertex, condition):
             if not u in v:
                 v.add(u)
                 q.append(u)
-
