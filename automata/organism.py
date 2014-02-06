@@ -1,7 +1,7 @@
 """
 Genome language:
 C(P),c,p : command, where C is a current state, P is a previous state (() if there is no condition),
-c is a condition on the number of connections, p is a conditoin on the number of parents
+c is a condition on the number of connections, p is a condition on the number of parents
 
 Command language:
 ++X - grow an adjacent cell in X state
@@ -29,6 +29,7 @@ class Command:
 
     def plus_plus(self, c):
         new_cell = Cell(c.graph, self.state, parents=c.number_of_parents+1)
+        new_cell.add_imediate_parent(c)
         go.add_vertex(c.graph, new_cell)
         go.add_edge(c.graph, new_cell, c, directed=False)
 
@@ -42,6 +43,7 @@ class Command:
         closest = go.find_closest(c.graph, c, lambda x: x.state == self.state and not x in c.graph[c])
         if closest:
             go.add_edge(c.graph, closest, c)
+            closest.add_imediate_parent(c)
 
     def minus(self, c):
         for v in c.graph[c]:
@@ -101,10 +103,14 @@ class Cell(object):
         self.state = state
         self.previous_state = state
         self.number_of_parents = parents
+        self.imediate_parents = []
 
     @property
     def number_of_connections(self):
         return len(self.graph[self])
+
+    def add_imediate_parent(self, c):
+        self.imediate_parents.append(c)
 
     def __str__(self):
         return "{}({})".format(self.state, self.previous_state)
