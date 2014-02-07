@@ -26,6 +26,11 @@ class Vector:
     def __sub__(self, v):
         return Vector(self.x - v.x, self.y - v.y)
 
+    def __div__(self, a):
+        if a != 0:
+            return Vector(self.x/a, self.y/a)
+        return self 
+
     def __add__(self, v):
         return Vector(self.x + v.x, self.y + v.y)
 
@@ -68,28 +73,33 @@ def spring_layout(graph, width, height, iterations=1000, c=0.5):
             x = random.randrange(-width/2, width/2)
             y = random.randrange(-height/2, height/2)
             v.pos = Vector(x, y)
+        v.disp = Vector(0, 0)
 
     for i in xrange(iterations):
-        # repulsive forces
-        for v in graph:
-            v.disp = Vector(0, 0)
-            for u in graph:
-                diff = v.pos - u.pos
-                v.disp = v.disp + fr(abs(diff))*diff.normalize()
-        # attractive forces
         for pair in itertools.combinations(graph.keys(), 2):
-            if pair[0] in graph[pair[1]]:
-                diff = pair[0].pos - pair[1].pos
-                force = fa(abs(diff))*diff.normalize()
-                pair[0].disp -= force
-                pair[1].disp += force
+            v, u = pair[0], pair[1]
+            diff = v.pos - u.pos
+            mag = abs(diff)
+            norm = diff/mag
+
+            # repulsive force
+            force = fr(mag)*norm
+
+            # attractive force
+            if v in graph[u]:
+                force -= fa(mag)*norm
+
+            v.disp += force
+            u.disp -= force
 
         for v in graph:
             # limit the maximum displacement to the temperature t
-            v.pos = v.pos + min(abs(v.disp), t)*v.disp.normalize()
+            mag = abs(v.disp)
+            v.pos = v.pos + min(mag, t)*v.disp/mag
             # prevent from being displaced outside frame
             v.pos.x = min(width/2, max(-width/2, v.pos.x))
             v.pos.y = min(height/2, max(-height/2, v.pos.y))
+            v.disp = Vector(0, 0)
 
         t -= dt
 
