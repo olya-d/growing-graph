@@ -74,6 +74,8 @@ class Genome:
 
     def __init__(self, text):
         self.operations = []
+        self.lines = []
         for line in text.splitlines():
+            self.lines.append(line)
             current_state, previous_state, connection_condition, command = re.match(Genome.re_operation, line).groups()
             self.operations.append(Operation(current_state, previous_state, connection_condition, command))
