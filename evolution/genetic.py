@@ -1,5 +1,6 @@
 import random
 import string
+from automata.genome import Genome
 
 
 def generate_operation(states):
@@ -48,3 +49,27 @@ def generate_genome(operations_limit=10, states_limit=10, max_connections=10, ma
         genes.append(gene)
 
     return '\n'.join(genes)
+
+
+def crossover(genome1, genome2):
+    """
+    Performs crossover on two instances of Genome class.
+    It creates new genome text, by splitting in the random point the text of two genomes
+    and then combining parts together.
+    Args:
+        genome1, genome2: genomes to perform crossover on.
+    Returns:
+        New instance of Genome class.
+    """
+    if len(genome1.lines) > len(genome2.lines):
+        longer_genome, shorter_genome = genome1, genome2
+    else:
+        longer_genome, shorter_genome = genome2, genome1
+
+    split_index = random.randint(1, len(shorter_genome.lines))
+    left_index = random.randint(split_index, len(longer_genome.lines))
+
+    genome_list = shorter_genome.lines[:split_index] + longer_genome.lines[split_index:left_index]
+
+    print '\n'.join(genome_list)
+    return Genome('\n'.join(genome_list))
