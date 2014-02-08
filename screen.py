@@ -12,6 +12,9 @@ FORCE_FQ = 100  # The frequency of a force-directed algorithm updates in ms
 ITERATION_FQ = 1000  # The frequency of organism's iterations in ms
 LAYOUT_ITERATIONS = 10  # The number of iterations in a force-directed algorithm per update
 
+FRAME_WIDTH = 600  # Graph frame width
+FRAME_HEIGHT = 600  # Graph frame height
+
 
 class GraphVisualizerFrame(wx.Frame):
     def __init__(self, parent, title, organism):
@@ -46,7 +49,7 @@ class GraphVisualizerFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.update_organism, self.iterate_timer)
 
         dc = wx.BufferedDC(wx.ClientDC(self.panel), self.buffer)
-        spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=LAYOUT_ITERATIONS)
+        spring_layout(self.organism.graph, width=FRAME_WIDTH, height=FRAME_HEIGHT, iterations=LAYOUT_ITERATIONS, c=0.2)
 
         # Generate a color for each state
         states = self.organism.genome.states()
@@ -58,7 +61,7 @@ class GraphVisualizerFrame(wx.Frame):
         """
         Updates layout by calling force-directed algorithm.
         """
-        if not spring_layout(self.organism.graph, width=WIN_WIDTH/2, height=WIN_HEIGHT/2, iterations=LAYOUT_ITERATIONS):
+        if not spring_layout(self.organism.graph, width=FRAME_WIDTH, height=FRAME_HEIGHT, iterations=LAYOUT_ITERATIONS, c=0.2):
             self.force_timer.Destroy()
         self.update(event)
 
@@ -93,10 +96,10 @@ class GraphVisualizerFrame(wx.Frame):
                 elif pair[1] == pair[0].imediate_parents:
                     edge_state = pair[1].state
                 dc.SetPen(wx.Pen(self.colors[edge_state]))
-                x1 = int(pair[0].pos['x']) + WIN_WIDTH/2
-                y1 = int(pair[0].pos['y']) + WIN_HEIGHT/2
-                x2 = int(pair[1].pos['x']) + WIN_WIDTH/2
-                y2 = int(pair[1].pos['y']) + WIN_HEIGHT/2
+                x1 = int(pair[0].pos['x']) + FRAME_WIDTH/2 + (WIN_WIDTH - FRAME_WIDTH)/2
+                y1 = int(pair[0].pos['y']) + FRAME_HEIGHT/2 + (WIN_HEIGHT - FRAME_HEIGHT)/2
+                x2 = int(pair[1].pos['x']) + FRAME_WIDTH/2 + (WIN_WIDTH - FRAME_WIDTH)/2
+                y2 = int(pair[1].pos['y']) + FRAME_HEIGHT/2 + (WIN_HEIGHT - FRAME_HEIGHT)/2
 
                 dc.DrawLine(x1, y1, x2, y2)
 
