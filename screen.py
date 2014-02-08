@@ -93,10 +93,10 @@ class GraphVisualizerFrame(wx.Frame):
                 elif pair[1] == pair[0].imediate_parents:
                     edge_state = pair[1].state
                 dc.SetPen(wx.Pen(self.colors[edge_state]))
-                x1 = int(pair[0].pos.x) + WIN_WIDTH/2
-                y1 = int(pair[0].pos.y) + WIN_HEIGHT/2
-                x2 = int(pair[1].pos.x) + WIN_WIDTH/2
-                y2 = int(pair[1].pos.y) + WIN_HEIGHT/2
+                x1 = int(pair[0].pos['x']) + WIN_WIDTH/2
+                y1 = int(pair[0].pos['y']) + WIN_HEIGHT/2
+                x2 = int(pair[1].pos['x']) + WIN_WIDTH/2
+                y2 = int(pair[1].pos['y']) + WIN_HEIGHT/2
 
                 dc.DrawLine(x1, y1, x2, y2)
 

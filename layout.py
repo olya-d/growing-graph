@@ -3,47 +3,6 @@ import math
 import itertools
 
 
-class Vector:
-    """2D dimensional vector.
-
-    Available operations:
-        addition, subtraction of vectors: v1 - v2, v1 + v2
-        magnitude: abs(v)
-        normalization: v.normalize()
-        scalar multiplication: a*v
-
-    Attributes:
-        x: x coordinate
-        y: y coordinate
-    """
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __rmul__(self, a):
-        return Vector(self.x*a, self.y*a)
-
-    def __sub__(self, v):
-        return Vector(self.x - v.x, self.y - v.y)
-
-    def __div__(self, a):
-        if a != 0:
-            return Vector(self.x/a, self.y/a)
-        return self 
-
-    def __add__(self, v):
-        return Vector(self.x + v.x, self.y + v.y)
-
-    def __abs__(self):
-        return math.sqrt(self.x*self.x + self.y*self.y)
-
-    def normalize(self):
-        m = abs(self)
-        if m != 0:
-            return 1/m * self
-        return self
-
-
 def spring_layout(graph, width, height, iterations=1000, c=0.5):
     """Graph Drawing by Force-directed Placement using Fruchterman-Reingold algorithm.
     Original paper: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.13.8444&rep=rep1&type=pdf
@@ -68,38 +27,56 @@ def spring_layout(graph, width, height, iterations=1000, c=0.5):
     t = width*1.0/10
     dt = t/(iterations + 1)
 
+    half_width = width/2
+    half_height = height/2
+
     for v in graph:
         if not hasattr(v, 'pos'):
-            x = random.randrange(-width/2, width/2)
-            y = random.randrange(-height/2, height/2)
-            v.pos = Vector(x, y)
-        v.disp = Vector(0, 0)
+            x = random.randrange(-half_width, half_width)
+            y = random.randrange(-half_height, half_height)
+            v.pos = {'x': x, 'y': y}
+        v.disp = {'x': 0, 'y': 0}
 
     for i in xrange(iterations):
         for pair in itertools.combinations(graph.keys(), 2):
             v, u = pair[0], pair[1]
-            diff = v.pos - u.pos
-            mag = abs(diff)
-            norm = diff/mag
+            dx = v.pos['x'] - u.pos['x']
+            dy = v.pos['y'] - u.pos['y']
+            mag = math.sqrt(dx*dx + dy*dy)
+            if mag != 0:
+                normx = dx/mag
+                normy = dy/mag
+            else:
+                normx = dx
+                normy = dy
 
             # repulsive force
-            force = fr(mag)*norm
+            forcex = fr(mag)*normx
+            forcey = fr(mag)*normy
 
             # attractive force
             if v in graph[u]:
-                force -= fa(mag)*norm
+                forcex -= fa(mag)*normx
+                forcey -= fa(mag)*normy
 
-            v.disp += force
-            u.disp -= force
+            v.disp['x'] += forcex
+            v.disp['y'] += forcey
+            u.disp['x'] -= forcex
+            u.disp['y'] -= forcey
 
         for v in graph:
             # limit the maximum displacement to the temperature t
-            mag = abs(v.disp)
-            v.pos = v.pos + min(mag, t)*v.disp/mag
+            mag = math.sqrt(v.disp['x']**2 + v.disp['y']**2)
+            if mag != 0:
+                posx = v.pos['x'] + min(mag, t)*v.disp['x']/mag
+                posy = v.pos['y'] + min(mag, t)*v.disp['y']/mag
+            else:
+                posx = v.pos['x'] + min(mag, t)*v.disp['x']
+                posy = v.pos['y'] + min(mag, t)*v.disp['y']               
             # prevent from being displaced outside frame
-            v.pos.x = min(width/2, max(-width/2, v.pos.x))
-            v.pos.y = min(height/2, max(-height/2, v.pos.y))
-            v.disp = Vector(0, 0)
+            v.pos['x'] = min(half_width, max(-half_width, posx))
+            v.pos['y'] = min(half_height, max(-half_height, posy))
+            v.disp = {'x': 0, 'y': 0}
 
         t -= dt
 
