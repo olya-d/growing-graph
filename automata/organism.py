@@ -23,6 +23,8 @@ import copy
 class Command:
     def __init__(self, action, state):
         self.state = state
+        self.text = text
+        action, self.state = re.match(r'([+-]*)(\w+)', text).groups()
         self.function = {
             '++': self.plus_plus,
             '--': self.minus_minus,
