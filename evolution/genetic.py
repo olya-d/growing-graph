@@ -3,13 +3,13 @@ import string
 from automata.organism import Genome, Operation, Command
 
 
-def generate_operation(states):
+def generate_command(states):
     """
-    Generates random operation.
+    Generates random command.
     Args:
         states: possible states
     Returns:
-        String that represents a random operation.
+        String that represents a random command.
     """
     operation = random.choice(['++', '--', '+', '-', ''])
     return '{}{}'.format(operation, random.choice(states))
@@ -42,7 +42,7 @@ def generate_genome(operations_limit=10, states_limit=10, max_connections=10, ma
         min_c = random.randint(0, max_connections)
         max_p = random.randint(0, max_parents)
         min_p = random.randint(0, max_parents)
-        operation = generate_operation(possible_states)
+        operation = generate_command(possible_states)
 
         gene = gene_format.format(current_state, previous_state, max_c, min_c, max_p, min_p, operation)
 
@@ -130,7 +130,7 @@ def mutate(genome):
     elif option == PAR_COND:
         operation.p_condition = _mutate_condition(operation.p_condition, 'p')
     else:
-        operation.command = Command(generate_operation(genome.states))
+        operation.command = Command(generate_command(genome.states))
 
     new_line = '{}({}),{},{}:{}'.format(
         operation.c_state, operation.p_state, operation.c_condition, operation.p_condition, operation.command.text)
