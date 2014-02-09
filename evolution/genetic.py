@@ -1,6 +1,6 @@
 import random
 import string
-from automata.genome import Genome
+from automata.organism import Genome, Operation, Command
 
 
 def generate_operation(states):
@@ -73,3 +73,68 @@ def crossover(genome1, genome2):
 
     print '\n'.join(genome_list)
     return Genome('\n'.join(genome_list))
+
+
+def _mutate_condition(condition, variable):
+    """
+    Mutates the condition (either on connections or on parents)
+    by increasing or decreasing by 1 maximum and minimum values.
+    Args:
+        condition: current condition
+        variable: variable that is used in the condition (c or p)
+    Returns:
+        mutated contdition as a string.
+    Example:
+        > _mutate_condition('6>=c>=5', 'c')  # '7>=c>=4'
+    """
+    a = int(condition[:condition.find('>=')])
+    c = int(condition[condition.rfind('>=') + 2:])
+    a += random.randint(-1, 1)
+    c += random.randint(-1, 1)
+    return '{}>={}>={}'.format(a, variable, c)
+
+
+def mutate(genome):
+    """
+    Mutates one of the operations in the genome.
+    One of the operation constituents can be modified:
+    current state, previous state, condition on connections, condition on parents, command.
+    Args:
+        genome: genome to modify.
+    Returns:
+        new instance of Genome with one mutated operation.
+    """
+    # Choose line to mutate.
+    mutate_i = random.randint(0, len(genome.lines) - 1)
+    mutate_line = genome.lines[mutate_i]
+    # Create new instance of Operation to parse the line.
+    operation = Operation(mutate_line)
+
+    # Options for mutation:
+    CUR_STATE = 0  # current_state
+    PREV_STATE = 1  # previous_state
+    CON_COND = 2  # condition on c
+    PAR_COND = 3  # condition on p
+    COMMAND = 4  # command
+
+    option = random.randint(0, 4)
+    if option == CUR_STATE:
+        operation.c_state = random.choice(genome.states)
+    elif option == PREV_STATE:
+        p_state = random.choice(genome.states + [' '])
+        if p_state == ' ':
+            p_state = ''
+        operation.p_state = p_state
+    elif option == CON_COND:
+        operation.c_condition = _mutate_condition(operation.c_condition, 'c')
+    elif option == PAR_COND:
+        operation.p_condition = _mutate_condition(operation.p_condition, 'p')
+    else:
+        operation.command = Command(generate_operation(genome.states))
+
+    new_line = '{}({}),{},{}:{}'.format(
+        operation.c_state, operation.p_state, operation.c_condition, operation.p_condition, operation.command.text)
+
+    new_lines = genome.lines
+    new_lines[mutate_i] = new_line
+    return Genome('\n'.join(new_lines))
