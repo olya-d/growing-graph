@@ -93,7 +93,7 @@ class Genome:
         for line in text.splitlines():
             self.operations.append(Operation(line))
             self.lines.append(line)
-        self.states = []
+        self._states = None
 
     def __str__(self):
         return self.text
