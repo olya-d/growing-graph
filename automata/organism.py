@@ -89,8 +89,11 @@ class Genome:
     def __init__(self, text):
         self.text = text
         self.operations = []
+        self.lines = []
         for line in text.splitlines():
             self.operations.append(Operation(line))
+            self.lines.append(line)
+        self._states = None
 
     def __str__(self):
         return self.text
