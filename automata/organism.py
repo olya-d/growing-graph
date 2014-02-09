@@ -93,13 +93,22 @@ class Genome:
         for line in text.splitlines():
             self.operations.append(Operation(line))
             self.lines.append(line)
-        self._states = None
+        self.states = []
 
     def __str__(self):
         return self.text
 
+    @property
     def states(self):
-        return set([state for op in self.operations for state in [op.state, op.command.state]])
+        if not self._states:
+            self._states = []
+            for operation in self.operations:
+                self._states.append(operation.c_state)
+                self._states.append(operation.p_state)
+                self._states.append(operation.command.state)
+            self._states = list(set(self._states))
+
+        return self._states
 
 
 class Cell(object):
