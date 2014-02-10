@@ -93,7 +93,7 @@ class GraphVisualizerFrame(wx.Frame):
             if pair[0] in self.organism.graph[pair[1]]:
                 if pair[0] in pair[1].imediate_parents:
                     edge_state = pair[0].state
-                elif pair[1] == pair[0].imediate_parents:
+                elif pair[1] in pair[0].imediate_parents:
                     edge_state = pair[1].state
                 dc.SetPen(wx.Pen(self.colors[edge_state]))
                 x1 = int(pair[0].pos['x']) + FRAME_WIDTH/2 + (WIN_WIDTH - FRAME_WIDTH)/2
@@ -104,9 +104,8 @@ class GraphVisualizerFrame(wx.Frame):
                 dc.DrawLine(x1, y1, x2, y2)
 
 app = wx.App()
-code = 'A(A),c>=0,p==0 :++B \
-\nB(),c >=0,p<2 :++B \nB(B),c>=0,p>=0 :C \nA(A),c>=0,p>=0 :G \nC(B), c==1,p>=0 :G \nG(G), c <=5,p>=0 :++H'
-organism = Organism('A', code)
+code = 'A|2|3|++|A'
+organism = Organism(code)
 frame = GraphVisualizerFrame(None, 'Organism', organism)
 frame.Show()
 

@@ -1,14 +1,18 @@
 """
 Genome language:
-C(P),c,p : command, where C is a current state, P is a previous state (() if there is no condition),
-c is a condition on the number of connections, p is a condition on the number of parents
+state|maximum number of adjacent edges|maximum number of parents|command|command state
+The first cell will be created in the state of the first line of genome.
+If maximum number of adjacent edges or parents is -1, it is ignored.
+
+Example:
+A|10|5|++|B will grow from a cell in state A an adjacent cell in state B, if A has no more than 10 edges and no more than 5 parents.
 
 Command language:
-++X - grow an adjacent cell in X state
---X - remove adjacent cell in X state
-+X  - connect to the closest cell in X state
--X  - disconnect from a cell in X state
-X   - change state to X
+++ - grow an adjacent cell
+-- - remove adjacent cell
++  - connect to the closest cell
+-  - disconnect from the closest cell
+->  - change state
 """
 import re
 import automata.graph_operatations as go
@@ -17,14 +21,14 @@ import copy
 
 
 class Command:
-    def __init__(self, text):
-        action, self.state = re.match(r'([+-]*)(\w+)', text).groups()
+    def __init__(self, action, state):
+        self.state = state
         self.function = {
             '++': self.plus_plus,
             '--': self.minus_minus,
             '+': self.plus,
             '-': self.minus,
-            '': self.change_state
+            '->': self.change_state
         }[action]
 
     def plus_plus(self, c):
@@ -40,9 +44,9 @@ class Command:
                 break
 
     def plus(self, c):
-        closest = go.find_closest(c.graph, c, lambda x: x.state == self.state and not x in c.graph[c])
+        closest = go.find_closest(c.graph, c, lambda x: x.state == self.state)
         if closest:
-            go.add_edge(c.graph, closest, c)
+            go.add_edge(c.graph, closest, c, directed=False)
             closest.add_imediate_parent(c)
 
     def minus(self, c):
@@ -52,52 +56,45 @@ class Command:
                 break
 
     def change_state(self, c):
-        c.previous_state = c.state
         c.state = self.state
 
 
 class Operation:
-    def __init__(self, text, c_state, p_state, c_condition, p_condition, command):
-        self.text = text
-        self.c_state = c_state
-        self.p_state = p_state
-        self.c_condition = c_condition.replace(' ', '')
-        self.p_condition = p_condition.replace(' ', '')
-        self.command = Command(command.replace(' ', ''))
+
+    parse_re = re.compile('([a-zA-Z])\|(-?\d+)\|(-?\d+)\|(\+\+|\-\-|\->|\+|-)\|([a-zA-Z])')
+
+    def __init__(self, text):
+        self.text = text.replace(' ', '')
+        parsed = re.match(Operation.parse_re, self.text)
+        self.state, max_edges, max_parents, action, command_state = parsed.groups()
+        self.max_edges = int(max_edges)
+        self.max_parents = int(max_parents)
+        self.command = Command(action, command_state)
 
     def execute(self, cell):
-        if cell.state == self.c_state:
-            if not self.p_state or cell.previous_state == self.p_state:
-                if self.conditions_satisfied(cell):
+        if cell.state == self.state:
+            if self.max_edges == -1 or cell.number_of_connections <= self.max_edges:
+                if self.max_parents == -1 or cell.number_of_parents <= self.max_parents:
                     self.command.function(cell)
                     return True
         return False
-
-    def conditions_satisfied(self, cell):
-        c = cell.number_of_connections
-        p = cell.number_of_parents
-        return eval(self.c_condition) and eval(self.p_condition)
 
     def __str__(self):
         return self.text
 
 
 class Genome:
-
-    re_operation = re.compile(r'(\w+)\((\w*)\),(.+),(.+):(.+)')
-
     def __init__(self, text):
         self.text = text
         self.operations = []
         for line in text.splitlines():
-            c_state, p_state, c_condition, p_condition, command = re.match(Genome.re_operation, line).groups()
-            self.operations.append(Operation(line, c_state, p_state, c_condition, p_condition, command))
+            self.operations.append(Operation(line))
 
     def __str__(self):
         return self.text
 
     def states(self):
-        return set([state for op in self.operations for state in [op.c_state, op.p_state, op.command.state]])
+        return set([state for op in self.operations for state in [op.state, op.command.state]])
 
 
 class Cell(object):
@@ -116,24 +113,21 @@ class Cell(object):
         self.imediate_parents.append(c)
 
     def __str__(self):
-        return "{}({})".format(self.state, self.previous_state)
+        return self.state
 
 
 class Organism(object):
-    def __init__(self, state, genome):
-        self.graph = collections.OrderedDict({})
+    def __init__(self, genome):
+        self.graph = {}
         self.genome = Genome(genome)
-        c = Cell(self.graph, state, parents=0)
+        c = Cell(self.graph, state=self.genome.operations[0].state, parents=0)
         go.add_vertex(self.graph, c)
 
     def iterate(self):
         changed = False
         graph = copy.copy(self.graph)
-        for c in graph:
-            s = c.state
-            for op in self.genome.operations:
-                if op.execute(c):
+        for operation in self.genome.operations:
+            for c in graph:
+                if operation.execute(c):
                     changed = True
-            if s == c.state:
-                c.previous_state = s
         return changed
